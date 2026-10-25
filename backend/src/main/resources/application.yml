@@ -1,0 +1,84 @@
+spring:
+  application:
+    name: market-sentinel
+  # Local development: read KEY=VALUE settings from the git-ignored .env file in the project root.
+  config:
+    import: optional:file:./.env[.properties],optional:file:../.env[.properties]
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5434/sentinel}
+    username: ${DATABASE_USER:sentinel}
+    password: ${DATABASE_PASSWORD:sentinel}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  flyway:
+    enabled: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: detection-engine
+      auto-offset-reset: earliest
+
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+sentinel:
+  # "inline": detection is triggered in-process. "kafka": trades are published to a Kafka topic
+  # and the detection engine consumes them.
+  ingest-mode: ${INGEST_MODE:inline}
+  kafka-topic: trades
+  # Comma-separated origins allowed to call the API from a browser (the dashboard).
+  cors-origins: ${CORS_ORIGINS:http://localhost:5174}
+  jwt:
+    # At least 32 characters. Override in production.
+    secret: ${JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
+    ttl-minutes: ${JWT_TTL_MINUTES:480}
+  demo:
+    # Creates a demo broker firm with one user per role on startup (only if it does not exist yet).
+    seed: ${SEED_DEMO:true}
+    password: ${DEMO_PASSWORD:Sentinel#2026}
+  detection:
+    market-zone: America/New_York
+    wash-min-trades: 3
+    spoof-large-multiple: 5
+    spoof-cancel-seconds: 10
+    spoof-min-cancels: 3
+    spoof-opposite-window-seconds: 60
+    close-window-minutes: 10
+    close-min-account-share: 0.6
+    close-min-market-share: 0.2
+    close-min-move: 0.01
+    pump-min-rise: 0.15
+    pump-min-sell-share: 0.7
+    front-run-window-minutes: 5
+    front-run-large-qty: 10000
+    insider-days-before: 10
+  sec:
+    # The SEC requires a User-Agent with a name and contact email on every request.
+    user-agent: ${SEC_USER_AGENT:MarketSentinel admin@example.com}
+    base-url: https://data.sec.gov
+    archives-url: https://www.sec.gov
+  ai:
+    gemini-api-key: ${GEMINI_API_KEY:}
+    models: ${GEMINI_MODELS:gemini-3.8-flash,gemini-3.5-flash-lite}
+    timeout-seconds: 10
+  billing:
+    stripe-secret-key: ${STRIPE_SECRET_KEY:}
+    stripe-webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+    price-pro: ${STRIPE_PRICE_PRO:}
+    price-enterprise: ${STRIPE_PRICE_ENTERPRISE:}
+    app-url: ${APP_URL:http://localhost:5174}

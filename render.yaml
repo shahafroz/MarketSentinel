@@ -1,0 +1,40 @@
+# Render blueprint: New -> Blueprint -> pick this repo. Fill in the secret values in the dashboard.
+services:
+  - type: web
+    name: marketsentinel-api
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /actuator/health
+    envVars:
+      # JDBC form of your Neon (or other) PostgreSQL URL, e.g.
+      # jdbc:postgresql://ep-xxx.us-east-2.aws.neon.tech/neondb?sslmode=require
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_USER
+        sync: false
+      - key: DATABASE_PASSWORD
+        sync: false
+      # Your Vercel dashboard URL(s), comma-separated.
+      - key: CORS_ORIGINS
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: SEC_USER_AGENT
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRICE_PRO
+        sync: false
+      - key: STRIPE_PRICE_ENTERPRISE
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: INGEST_MODE
+        value: inline
+      - key: SEED_DEMO
+        value: "true"
