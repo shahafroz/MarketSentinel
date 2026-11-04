@@ -1,6 +1,7 @@
 package com.marketsentinel.edgar;
 
 import com.marketsentinel.security.CurrentUser;
+import com.marketsentinel.web.DecimalString;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -36,8 +37,8 @@ public class EdgarController {
     public record ImportRequest(@NotEmpty @Size(max = 10) List<String> tickers, @Min(1) @Max(730) Integer days) {
     }
 
-    public record InsiderRow(String ticker, String owner, String title, LocalDate date, String code, BigDecimal shares,
-            BigDecimal price, boolean acquired, String accession) {
+    public record InsiderRow(String ticker, String owner, String title, LocalDate date, String code, @DecimalString BigDecimal shares,
+            @DecimalString BigDecimal price, boolean acquired, String accession) {
     }
 
     public record EventRow(String ticker, LocalDate filedOn, String items, boolean priceSensitive, String accession) {

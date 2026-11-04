@@ -4,6 +4,7 @@ import com.marketsentinel.alert.AlertViews.AccountRisk;
 import com.marketsentinel.alert.AlertViews.AlertDetail;
 import com.marketsentinel.alert.AlertViews.AlertSummary;
 import com.marketsentinel.alert.AlertViews.Bar;
+import com.marketsentinel.alert.AlertViews.DailyActivity;
 import com.marketsentinel.alert.AlertViews.Edge;
 import com.marketsentinel.alert.AlertViews.MarketContext;
 import com.marketsentinel.alert.AlertViews.OrderPoint;
@@ -18,12 +19,16 @@ import com.marketsentinel.market.OrderRepository;
 import com.marketsentinel.market.Trade;
 import com.marketsentinel.market.TradeRepository;
 import com.marketsentinel.web.ApiException;
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -152,7 +157,23 @@ public class AlertService {
         return new Stats(alerts.countByTenantIdAndStatus(tenantId, AlertStatus.NEW),
                 alerts.countByTenantIdAndStatus(tenantId, AlertStatus.IN_REVIEW),
                 alerts.countByTenantIdAndStatus(tenantId, AlertStatus.CLOSED), patterns, riskiest,
-                trades.countByTenantId(tenantId));
+                trades.countByTenantId(tenantId), daily(tenantId, all));
+    }
+
+    /** The last 20 market days with trades, oldest first, with each day's alerts counted by pattern. */
+    private List<DailyActivity> daily(UUID tenantId, List<Alert> all) {
+        Map<LocalDate, Map<Pattern, Long>> alertsByDay = new HashMap<>();
+        for (Alert a : all) {
+            alertsByDay.computeIfAbsent(a.getTradeDate(), d -> new EnumMap<>(Pattern.class)).merge(a.getPattern(), 1L, Long::sum);
+        }
+        List<DailyActivity> days = new ArrayList<>();
+        for (Object[] row : trades.dailyActivity(tenantId, zone.getId(), 20)) {
+            LocalDate day = LocalDate.parse((String) row[0]);
+            days.add(new DailyActivity(day, ((Number) row[1]).longValue(), (BigDecimal) row[2],
+                    alertsByDay.getOrDefault(day, Map.of())));
+        }
+        Collections.reverse(days);
+        return days;
     }
 
     static List<Bar> minuteBars(List<Trade> dayTrades) {

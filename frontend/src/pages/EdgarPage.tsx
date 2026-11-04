@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../auth'
 import { ErrorBox } from '../components/ui'
-import { num } from '../format'
+import { num, price } from '../format'
 import type { EdgarImportResult, EventRow, InsiderRow } from '../types'
 
 const CODES: Record<string, string> = {
@@ -91,7 +91,7 @@ export default function EdgarPage() {
                   <td>{t.owner}<div className="muted small">{t.title}</div></td>
                   <td>{t.code === 'P' ? <span className="score score-mid">{CODES.P}</span> : <span className="small">{CODES[t.code] ?? t.code}</span>}</td>
                   <td className="num">{num(t.shares)}</td>
-                  <td className="num">{t.price ? t.price.toFixed(2) : '–'}</td>
+                  <td className="num">{t.price ? price(t.price) : '–'}</td>
                 </tr>
               ))}
             </tbody>

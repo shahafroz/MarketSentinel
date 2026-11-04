@@ -55,8 +55,17 @@ final class SimulatedDay {
         return date.atTime(LocalTime.of(hour, minute, second)).atZone(zone).toInstant();
     }
 
-    static BigDecimal price(double value) {
-        return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_EVEN);
+    /** Rounds a running price to the cent for a trade or order. */
+    static BigDecimal price(BigDecimal value) {
+        return value.setScale(2, RoundingMode.HALF_EVEN);
+    }
+
+    /**
+     * Moves a price by a ratio (e.g. 1.005 = up 0.5 %). Prices stay BigDecimal; only the ratio, often
+     * random noise, is a double. Kept to 6 places so a random walk does not drift from rounding.
+     */
+    static BigDecimal times(BigDecimal price, double ratio) {
+        return price.multiply(BigDecimal.valueOf(ratio)).setScale(6, RoundingMode.HALF_EVEN);
     }
 
     /** A filled trade, with the buy and sell orders that produced it (placed 1–5 s earlier). */

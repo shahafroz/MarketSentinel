@@ -1,3 +1,5 @@
+import type { Decimal } from './types'
+
 // All market times are shown in New York time, the US equities market's clock.
 const NY = 'America/New_York'
 
@@ -13,8 +15,17 @@ const dateTimeFmt = new Intl.DateTimeFormat('en-US', {
 
 export const nyTime = (iso: string | number) => timeFmt.format(new Date(iso))
 export const nyDateTime = (iso: string) => `${dateTimeFmt.format(new Date(iso))} ET`
-export const num = (n: number) => n.toLocaleString('en-US')
-export const usd = (n: number) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+const numFmt = new Intl.NumberFormat('en-US')
+const priceFmt = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+// Intl formats a numeric string as an exact decimal, so API amounts are shown without passing through a float.
+export const num = (n: number | Decimal) => numFmt.format(n)
+export const price = (d: Decimal) => priceFmt.format(d)
+const usdFmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+const usdCompactFmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 })
+export const usd = (d: Decimal) => usdFmt.format(d)
+/** Axis ticks only ($1.2M); exact amounts use usd(). */
+export const usdCompact = (n: number) => usdCompactFmt.format(n)
 
 export const humanize = (key: string) =>
   key

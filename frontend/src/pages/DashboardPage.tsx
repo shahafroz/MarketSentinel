@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../auth'
+import { AlertsByDayChart, TradedValueChart } from '../components/ActivityCharts'
 import { ErrorBox, Score } from '../components/ui'
 import { num } from '../format'
 import type { SimulationResult, Stats } from '../types'
@@ -67,6 +68,19 @@ export default function DashboardPage() {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {s.daily.length > 0 && (
+            <div className="grid grid-2">
+              <div className="card">
+                <h2>Traded value per day</h2>
+                <TradedValueChart daily={s.daily} />
+              </div>
+              <div className="card">
+                <h2>Alerts per day</h2>
+                <AlertsByDayChart daily={s.daily} patterns={s.byPattern} />
+              </div>
             </div>
           )}
 

@@ -26,4 +26,17 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
 
     @Query("select max(t.executedAt) from Trade t where t.tenantId = :tenantId")
     Optional<Instant> latestExecution(@Param("tenantId") UUID tenantId);
+
+    /**
+     * Per market day, newest first: [day as yyyy-MM-dd, trade count, traded value]. Traded value is
+     * SUM(price * quantity) computed in NUMERIC, so it comes back as an exact BigDecimal.
+     */
+    @Query(value = """
+            SELECT TO_CHAR(executed_at AT TIME ZONE :zone, 'YYYY-MM-DD') AS day, COUNT(*), SUM(price * quantity)
+            FROM trades
+            WHERE tenant_id = :tenantId
+            GROUP BY 1
+            ORDER BY 1 DESC
+            LIMIT :days""", nativeQuery = true)
+    List<Object[]> dailyActivity(@Param("tenantId") UUID tenantId, @Param("zone") String zone, @Param("days") int days);
 }

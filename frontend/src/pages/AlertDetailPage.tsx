@@ -6,7 +6,7 @@ import NetworkGraph from '../components/NetworkGraph'
 import OrderTimeline from '../components/OrderTimeline'
 import PriceChart from '../components/PriceChart'
 import { ErrorBox, Evidence, Score, Status } from '../components/ui'
-import { num, nyDateTime, nyTime } from '../format'
+import { num, nyDateTime, nyTime, price } from '../format'
 import type { AlertDetail, CaseView, MarketContext } from '../types'
 
 export default function AlertDetailPage() {
@@ -86,7 +86,7 @@ export default function AlertDetailPage() {
                 <thead><tr><th>Time (ET)</th><th>Seller</th><th>Buyer</th><th className="num">Shares</th><th className="num">Price</th></tr></thead>
                 <tbody>
                   {market.data.flaggedTrades.slice(0, 40).map((t) => (
-                    <tr key={t.tradeRef}><td className="mono">{nyTime(t.time)}</td><td className="mono">{t.seller}</td><td className="mono">{t.buyer}</td><td className="num">{num(t.quantity)}</td><td className="num">{t.price.toFixed(2)}</td></tr>
+                    <tr key={t.tradeRef}><td className="mono">{nyTime(t.time)}</td><td className="mono">{t.seller}</td><td className="mono">{t.buyer}</td><td className="num">{num(t.quantity)}</td><td className="num">{price(t.price)}</td></tr>
                   ))}
                 </tbody>
               </table>

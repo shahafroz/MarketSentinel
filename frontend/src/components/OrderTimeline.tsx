@@ -1,4 +1,4 @@
-import { num, nyTime } from '../format'
+import { num, nyTime, price } from '../format'
 import type { OrderPoint } from '../types'
 
 /** Each flagged order as a row: when it was placed, how long it lived, and whether it was cancelled. */
@@ -27,7 +27,7 @@ export default function OrderTimeline({ orders }: { orders: OrderPoint[] }) {
                 <td>{o.account}</td>
                 <td>{o.side}</td>
                 <td className="num">{num(o.quantity)}</td>
-                <td className="num">{o.price.toFixed(2)}</td>
+                <td className="num">{price(o.price)}</td>
                 <td>{o.status === 'CANCELLED' ? <span className="score score-high">Cancelled</span> : <span className="badge">{o.status}</span>}</td>
                 <td className="num">{lived === null ? '–' : lived < 120 ? `${lived.toFixed(0)} s` : `${(lived / 60).toFixed(0)} min`}</td>
               </tr>

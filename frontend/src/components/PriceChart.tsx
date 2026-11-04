@@ -13,10 +13,11 @@ import {
 import { num, nyTime } from '../format'
 import type { MarketContext } from '../types'
 
+// Prices are converted to numbers here only to place points on the chart; tables show the exact strings.
 /** Minute closes (line) and volume (bars) for the day, the alert window shaded, flagged trades as red dots. */
 export default function PriceChart({ market, windowStart, windowEnd }: { market: MarketContext; windowStart: string; windowEnd: string }) {
-  const data = market.bars.map((b) => ({ t: new Date(b.time).getTime(), close: b.close, volume: b.volume }))
-  const flagged = market.flaggedTrades.map((t) => ({ t: new Date(t.time).getTime(), price: t.price, qty: t.quantity, who: `${t.seller} → ${t.buyer}` }))
+  const data = market.bars.map((b) => ({ t: new Date(b.time).getTime(), close: Number(b.close), volume: b.volume }))
+  const flagged = market.flaggedTrades.map((t) => ({ t: new Date(t.time).getTime(), price: Number(t.price), qty: t.quantity, who: `${t.seller} → ${t.buyer}` }))
   if (data.length === 0) return <p className="muted">No trades stored for {market.symbol} on {market.date}.</p>
 
   const prices = [...data.map((d) => d.close), ...flagged.map((f) => f.price)]

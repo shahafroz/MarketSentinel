@@ -1,3 +1,6 @@
+/** An exact decimal sent by the API as a string ("12.3400"), so it is never parsed into a float. */
+export type Decimal = Intl.StringNumericLiteral
+
 export type Role = 'ANALYST' | 'SUPERVISOR' | 'AUDITOR' | 'ADMIN'
 
 export type Pattern =
@@ -50,17 +53,17 @@ export interface AlertDetail {
 
 export interface Bar {
   time: string
-  open: number
-  high: number
-  low: number
-  close: number
+  open: Decimal
+  high: Decimal
+  low: Decimal
+  close: Decimal
   volume: number
 }
 
 export interface TradePoint {
   tradeRef: string
   time: string
-  price: number
+  price: Decimal
   quantity: number
   buyer: string
   seller: string
@@ -71,7 +74,7 @@ export interface OrderPoint {
   account: string
   side: 'BUY' | 'SELL'
   quantity: number
-  price: number
+  price: Decimal
   placedAt: string
   cancelledAt: string | null
   status: string
@@ -101,6 +104,14 @@ export interface Stats {
   byPattern: { pattern: Pattern; label: string; count: number }[]
   riskiestAccounts: { account: string; openAlerts: number; riskScore: number }[]
   tradesStored: number
+  daily: DailyActivity[]
+}
+
+export interface DailyActivity {
+  day: string
+  trades: number
+  tradedValue: Decimal
+  alerts: Partial<Record<Pattern, number>>
 }
 
 export interface Page<T> {
@@ -141,8 +152,8 @@ export interface InsiderRow {
   title: string
   date: string
   code: string
-  shares: number
-  price: number | null
+  shares: Decimal
+  price: Decimal | null
   acquired: boolean
   accession: string
 }

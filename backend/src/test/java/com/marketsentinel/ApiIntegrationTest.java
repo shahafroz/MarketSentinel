@@ -79,6 +79,13 @@ class ApiIntegrationTest {
         assertThat(call("POST", "/api/v1/ingest/trades", null, trade, Map.of("X-API-Key", "msk_nope", "Idempotency-Key", "x"))
                 .status()).isEqualTo(401);
         assertThat(call("GET", "/api/v1/billing", admin, null, Map.of()).body().path("tradesThisMonth").asLong()).isEqualTo(1);
+
+        // Traded value is exact NUMERIC math, sent as a string so JavaScript never parses it into a float.
+        JsonNode day = call("GET", "/api/v1/alerts/stats", admin, null, Map.of()).body().path("daily").path(0);
+        assertThat(day.path("day").asString()).isEqualTo("2026-10-21");
+        assertThat(day.path("trades").asLong()).isEqualTo(1);
+        assertThat(day.path("tradedValue").isString()).isTrue();
+        assertThat(day.path("tradedValue").asString()).isEqualTo("1025.0000");
     }
 
     private String signup(String firm, String email) throws Exception {
