@@ -1,5 +1,6 @@
 package com.marketsentinel.security;
 
+import com.marketsentinel.config.SentinelProperties;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,6 +15,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 /**
  * Per-IP fixed-window rate limit (in memory). Login and signup get a tight limit against password
  * guessing; everything else a generous one. For several server instances this would move to Redis.
+ *
+ * The client IP comes from X-Forwarded-For only as far as our own proxies vouch for it: each proxy
+ * appends the address it saw, so anything further left was written by the caller and can be forged
+ * to dodge the limit. Set sentinel.trusted-proxy-hops to the number of proxies in front of the app.
  */
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
@@ -26,12 +31,18 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     private final Map<String, Window> windows = new ConcurrentHashMap<>();
+    private final int trustedProxyHops;
+
+    public RateLimitFilter(SentinelProperties props) {
+        this.trustedProxyHops = props.trustedProxyHops();
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
         boolean auth = request.getRequestURI().startsWith("/api/v1/auth/");
-        String key = (auth ? "auth:" : "api:") + clientIp(request);
+        String key = (auth ? "auth:" : "api:")
+                + clientIp(request.getHeader("X-Forwarded-For"), request.getRemoteAddr(), trustedProxyHops);
         long now = System.currentTimeMillis();
         Window w = windows.compute(key, (k, old) -> old == null || now - old.start() >= WINDOW_MS
                 ? new Window(now, new AtomicInteger()) : old);
@@ -49,8 +60,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 
-    private static String clientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        return forwarded != null && !forwarded.isBlank() ? forwarded.split(",")[0].trim() : request.getRemoteAddr();
+    static String clientIp(String forwardedFor, String remoteAddr, int trustedProxyHops) {
+        if (trustedProxyHops <= 0 || forwardedFor == null || forwardedFor.isBlank()) {
+            return remoteAddr;
+        }
+        String[] hops = forwardedFor.split(",");
+        // Fewer entries than proxies means the request did not come through all of them.
+        return hops.length < trustedProxyHops ? remoteAddr : hops[hops.length - trustedProxyHops].trim();
     }
 }

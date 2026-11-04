@@ -54,7 +54,7 @@ flowchart LR
 - **Human-in-the-loop AI:** Gemini drafts case summaries from the evidence only, in a fixed JSON schema, with a 10 s limit per model and a lighter fallback model. A supervisor must approve the text; edits are audited.
 - **Safe external data:** the EDGAR client sends the SEC's required User-Agent and stays under its rate limit; the Form 4 XML parser disables DOCTYPEs and external entities (XXE protection).
 - **Billing you can trust:** Stripe Checkout and the customer portal for upgrades; a firm's plan changes only from a signature-verified webhook, and each webhook event is applied once. Plans cap trades per month (Free 10k, Pro 1M), counted with an atomic upsert.
-- **Rate limits** per IP, with a tight limit on login and signup.
+- **Rate limits** per IP, with a tight limit on login and signup. Only `X-Forwarded-For` entries added by our own proxies are trusted, so a forged header cannot dodge the limit.
 
 ## Run it locally
 
@@ -95,7 +95,7 @@ Send a few such trades between `R1` and `R2`, and a wash-trading alert appears w
 ## Tests
 
 ```bash
-cd backend && ./mvnw verify   # 32 tests
+cd backend && ./mvnw verify   # 37 tests
 ```
 
 - Each detector: a clean case, an obvious case, and a borderline case just under the threshold.

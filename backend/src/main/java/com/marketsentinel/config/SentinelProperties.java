@@ -11,6 +11,7 @@ public record SentinelProperties(
         String ingestMode,
         String kafkaTopic,
         List<String> corsOrigins,
+        int trustedProxyHops,
         Jwt jwt,
         Demo demo,
         Detection detection,

@@ -34,6 +34,9 @@ services:
         sync: false
       - key: JWT_SECRET
         generateValue: true
+      # Proxies in front of the app, for rate limiting by real client IP.
+      - key: TRUSTED_PROXY_HOPS
+        value: "1"
       - key: INGEST_MODE
         value: inline
       - key: SEED_DEMO

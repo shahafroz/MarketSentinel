@@ -43,6 +43,9 @@ sentinel:
   kafka-topic: trades
   # Comma-separated origins allowed to call the API from a browser (the dashboard).
   cors-origins: ${CORS_ORIGINS:http://localhost:5174}
+  # How many proxies sit in front of the app. Decides which X-Forwarded-For entry is the real client
+  # for rate limiting; entries further left are written by the caller. 0 ignores the header.
+  trusted-proxy-hops: ${TRUSTED_PROXY_HOPS:0}
   jwt:
     # At least 32 characters. Override in production.
     secret: ${JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
