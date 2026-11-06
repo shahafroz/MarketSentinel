@@ -4,6 +4,7 @@ services:
     name: marketsentinel-api
     runtime: docker
     plan: free
+    region: ohio
     rootDir: backend
     dockerfilePath: ./Dockerfile
     healthCheckPath: /actuator/health
