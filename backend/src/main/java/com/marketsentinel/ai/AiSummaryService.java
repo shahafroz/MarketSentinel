@@ -5,9 +5,11 @@ import com.marketsentinel.caseflow.CaseNote;
 import com.marketsentinel.config.SentinelProperties;
 import java.net.http.HttpClient;
 import java.time.Duration;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -74,18 +76,7 @@ public class AiSummaryService {
     }
 
     private JsonNode callGemini(String model, String prompt) {
-        Map<String, Object> schema = Map.of(
-                "type", "object",
-                "properties", Map.of(
-                        "summary", Map.of("type", "string"),
-                        "keyFacts", Map.of("type", "array", "items", Map.of("type", "string")),
-                        "recommendedAction", Map.of("type", "string", "enum", List.copyOf(ACTIONS)),
-                        "rationale", Map.of("type", "string")),
-                "required", List.of("summary", "keyFacts", "recommendedAction", "rationale"));
-        Map<String, Object> body = Map.of(
-                "contents", List.of(Map.of("role", "user", "parts", List.of(Map.of("text", prompt)))),
-                "generationConfig", Map.of("temperature", 0.2, "responseMimeType", "application/json",
-                        "responseJsonSchema", schema));
+        Map<String, Object> body = requestBody(prompt);
         String response = http.post().uri("/models/{model}:generateContent", model)
                 .header("x-goog-api-key", config.geminiApiKey())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -101,7 +92,28 @@ public class AiSummaryService {
         return answer;
     }
 
-    private String prompt(Alert alert, List<CaseNote> notes) {
+    /** The exact Gemini request. Public so the evaluation in evals/ scores what production sends. */
+    public static Map<String, Object> requestBody(String prompt) {
+        Map<String, Object> schema = new LinkedHashMap<>();
+        schema.put("type", "object");
+        Map<String, Object> properties = new LinkedHashMap<>();
+        properties.put("summary", Map.of("type", "string"));
+        properties.put("keyFacts", new TreeMap<>(Map.of("type", "array", "items", Map.of("type", "string"))));
+        properties.put("recommendedAction", new TreeMap<>(Map.of("type", "string", "enum", ACTIONS.stream().sorted().toList())));
+        properties.put("rationale", Map.of("type", "string"));
+        schema.put("properties", properties);
+        schema.put("required", List.of("summary", "keyFacts", "recommendedAction", "rationale"));
+        Map<String, Object> generationConfig = new LinkedHashMap<>();
+        generationConfig.put("temperature", 0.2);
+        generationConfig.put("responseMimeType", "application/json");
+        generationConfig.put("responseJsonSchema", schema);
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("contents", List.of(new TreeMap<>(Map.of("role", "user", "parts", List.of(Map.of("text", prompt))))));
+        body.put("generationConfig", generationConfig);
+        return body;
+    }
+
+    public static String prompt(Alert alert, List<CaseNote> notes) {
         StringBuilder sb = new StringBuilder("""
                 You are a market-surveillance analyst at a US broker-dealer. Draft a short, neutral investigation
                 summary for a compliance supervisor. Use ONLY the facts below; do not invent numbers, names or dates.

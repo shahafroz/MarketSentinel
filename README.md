@@ -95,7 +95,7 @@ Send a few such trades between `R1` and `R2`, and a wash-trading alert appears w
 ## Tests
 
 ```bash
-cd backend && ./mvnw verify   # 37 tests
+cd backend && ./mvnw verify   # 38 tests
 ```
 
 - Each detector: a clean case, an obvious case, and a borderline case just under the threshold.
@@ -104,6 +104,10 @@ cd backend && ./mvnw verify   # 37 tests
 - Integration tests against PostgreSQL in Docker (Testcontainers) over real HTTP: tenant isolation, idempotent ingest, validation and API-key auth.
 
 GitHub Actions runs the backend tests, lints and builds the dashboard, and builds both Docker images on every push.
+
+## Evaluating the AI
+
+[`evals/`](evals/README.md) scores the Gemini case summaries against the evidence they were given: factual accuracy, hallucination rate, key-fact traceability, completeness, consistency across repeat runs, and resistance to prompt injection in analyst notes. It sends the exact request production sends, on cases with known answers from the simulator.
 
 ## Deploy (free tiers)
 

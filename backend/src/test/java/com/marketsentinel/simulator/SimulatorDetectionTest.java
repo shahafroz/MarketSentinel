@@ -56,7 +56,7 @@ class SimulatorDetectionTest {
                 .containsExactly("PD-1", "PD-2");
     }
 
-    private static MarketDay toMarketDay(SimulatedDay sim) {
+    static MarketDay toMarketDay(SimulatedDay sim) {
         List<Trade> trades = sim.trades.stream()
                 .map(t -> new Trade(TENANT, t.ref(), t.symbol(), t.buyAccount(), t.sellAccount(), t.buyOrder(),
                         t.sellOrder(), t.price(), t.qty(), t.executedAt(), t.ref()))
