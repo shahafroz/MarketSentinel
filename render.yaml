@@ -5,8 +5,11 @@ services:
     runtime: docker
     plan: free
     region: ohio
-    rootDir: backend
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    buildFilter:
+      paths:
+        - backend/**
     healthCheckPath: /actuator/health
     envVars:
       # JDBC form of your Neon (or other) PostgreSQL URL, e.g.
