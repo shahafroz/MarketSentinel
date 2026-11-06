@@ -6,12 +6,6 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "frontend", "run", "dev", "--", "--port", "5174", "--strictPort"],
       "port": 5174
-    },
-    {
-      "name": "veritas",
-      "runtimeExecutable": "C:/Users/acer/Desktop/Veritas/backend/.venv/Scripts/python.exe",
-      "runtimeArgs": ["-m", "uvicorn", "app.main:app", "--app-dir", "C:/Users/acer/Desktop/Veritas/backend", "--port", "8000"],
-      "port": 8000
     }
   ]
 }
