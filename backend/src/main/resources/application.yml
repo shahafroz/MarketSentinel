@@ -54,6 +54,9 @@ sentinel:
     # Creates a demo broker firm with one user per role on startup (only if it does not exist yet).
     seed: ${SEED_DEMO:true}
     password: ${DEMO_PASSWORD:Sentinel#2026}
+    # Simulated days each firm may generate. Each is about 2,400 trades, and they skip plan limits,
+    # so this keeps a public demo inside a small database. 0 means no cap.
+    max-simulated-days: ${DEMO_MAX_SIMULATED_DAYS:30}
   detection:
     market-zone: America/New_York
     wash-min-trades: 3

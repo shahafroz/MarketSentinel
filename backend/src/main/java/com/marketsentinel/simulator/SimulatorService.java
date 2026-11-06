@@ -21,7 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Generates a simulated trading day and saves it with JDBC batch inserts (thousands of rows in one
- * round trip each), then runs detection on it. Simulated data does not count towards plan limits.
+ * round trip each), then runs detection on it. Simulated data does not count towards plan limits,
+ * so sentinel.demo.max-simulated-days caps it instead.
  */
 @Service
 public class SimulatorService {
@@ -32,10 +33,12 @@ public class SimulatorService {
     private final DetectionService detection;
     private final AuditService audit;
     private final ZoneId zone;
+    private final int maxDays;
 
     public SimulatorService(JdbcTemplate jdbc, TradeRepository trades, DetectionService detection, AuditService audit,
             SentinelProperties props) {
         this.zone = props.detection().marketZone();
+        this.maxDays = props.demo().maxSimulatedDays();
         this.simulator = new MarketSimulator(zone);
         this.jdbc = jdbc;
         this.trades = trades;
@@ -49,6 +52,9 @@ public class SimulatorService {
 
     @Transactional
     public SimulationResult simulate(UUID tenantId, String actor, LocalDate requested) {
+        if (maxDays > 0 && simulatedDays(tenantId) >= maxDays) {
+            throw new ApiException(HttpStatus.CONFLICT, "This firm has reached its limit of " + maxDays + " simulated days.");
+        }
         LocalDate date = requested != null ? requested : nextFreeTradingDay(tenantId);
         if (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) {
             throw new IllegalArgumentException(date + " is a weekend; markets are closed");
@@ -110,6 +116,13 @@ public class SimulatorService {
                 day.trades.size() + " trades, " + day.orders.size() + " orders");
         DetectionService.RunResult run = detection.runForDay(tenantId, date);
         return new SimulationResult(date, day.accounts.size(), day.orders.size(), day.trades.size(), result.injected(), run);
+    }
+
+    /** Every simulated day has exactly one first trade, SIM-yyyyMMdd-T1. */
+    private long simulatedDays(UUID tenantId) {
+        Long days = jdbc.queryForObject("SELECT count(*) FROM trades WHERE tenant_id = ? AND trade_ref LIKE 'SIM-%-T1'",
+                Long.class, tenantId);
+        return days == null ? 0 : days;
     }
 
     private boolean alreadySimulated(UUID tenantId, LocalDate date) {

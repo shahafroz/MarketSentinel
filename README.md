@@ -95,7 +95,7 @@ Send a few such trades between `R1` and `R2`, and a wash-trading alert appears w
 ## Tests
 
 ```bash
-cd backend && ./mvnw verify   # 38 tests
+cd backend && ./mvnw verify   # 41 tests
 ```
 
 - Each detector: a clean case, an obvious case, and a borderline case just under the threshold.
@@ -123,5 +123,6 @@ Stripe (optional): create Pro and Enterprise prices in **test mode**, set `STRIP
 - The simulator uses made-up tickers; detection on real market data would need a market-data feed.
 - Detectors are rule-based screens, not proof: an alert is a reason to look, and analysts decide.
 - The insider screen does not yet check the price reaction after the 8-K (no free intraday price source is used).
+- Each firm can generate 30 simulated days (`DEMO_MAX_SIMULATED_DAYS`, 0 for no cap), so a public demo stays inside a small database. The cap is per firm, and signup is open, so it stops repeat clicking rather than a determined script.
 - Rate limits and pending detections are kept in memory: fine for one instance, Redis for several.
 - In `inline` mode, detections pending at shutdown are lost until new data arrives for that day; `kafka` mode keeps them in the topic.

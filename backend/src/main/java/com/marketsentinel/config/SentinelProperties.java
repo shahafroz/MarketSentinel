@@ -26,7 +26,7 @@ public record SentinelProperties(
     public record Jwt(String secret, long ttlMinutes) {
     }
 
-    public record Demo(boolean seed, String password) {
+    public record Demo(boolean seed, String password, int maxSimulatedDays) {
     }
 
     public record Detection(
