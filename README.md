@@ -2,6 +2,8 @@
 
 Trade-surveillance SaaS for US broker-dealers. Brokers send their orders and trades; MarketSentinel detects market manipulation, scores it, and gives compliance analysts a dashboard to investigate, with an append-only audit trail regulators can rely on.
 
+**Live demo:** [marketsentinel-orpin.vercel.app](https://marketsentinel-orpin.vercel.app). Pick a demo user to sign in, then click **Run market day**. The free API server sleeps when idle, so the first request can take about 3 minutes.
+
 **Stack:** Java 21 · Spring Boot 4 · Spring Security (JWT + API keys) · Spring Data JPA · PostgreSQL · Flyway · Kafka · JUnit 5 + Testcontainers · React 19 + TypeScript · TanStack Query · Recharts · Stripe · SEC EDGAR · Gemini · Docker · GitHub Actions
 
 <!-- Add a 60-second demo GIF here: docs/demo.gif -->
